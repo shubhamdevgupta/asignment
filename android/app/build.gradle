@@ -9,6 +9,7 @@ apply plugin: 'com.google.gms.google-services'
 android {
     namespace = "com.example.asignment"
     ndkVersion = flutter.ndkVersion
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

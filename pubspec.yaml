@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   latlng: ^2.0.7
   geolocator: ^13.0.2
-  android_alarm_manager_plus: ^4.0.5
   firebase_core: any
   cloud_firestore: any
   flutter_background_geolocation: ^4.11.0
