@@ -1,14 +1,59 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:workmanager/workmanager.dart';
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    await Firebase.initializeApp(); // Ensure Firebase is initialized
+    if (task == "fetchLocationTask") {
+      print("Executing background location fetch...");
+      await fetchLocation();
+    }
+    return Future.value(true);
+  });
+}
+
+Future<void> fetchLocation() async {
+  try {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      print("Background: Location services are disabled. Cannot fetch location.");
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      print("Background: Location permissions are denied. Cannot fetch location.");
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    // Log the background location fetch
+    print("Background location fetched at ${DateTime.now()}: Latitude ${position.latitude}, Longitude ${position.longitude}");
+
+    // Save location to Firestore
+    CollectionReference locations = FirebaseFirestore.instance.collection('locations');
+    await locations.add({
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    print("Error fetching background location: $e");
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(); // Initialize Firebase
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
 
   print("Background fetch initialized.");
   runApp(MyApp());
@@ -36,14 +81,27 @@ class _LocationScreenState extends State<LocationScreen> {
   void initState() {
     super.initState();
     _startPeriodicLocationUpdates();
+    _scheduleBackgroundTask();
   }
 
   void _startPeriodicLocationUpdates() {
-    _timer = Timer.periodic(Duration(minutes: 5), (timer) async {
+    print("Starting foreground periodic location updates.");
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) async {
       await _getCurrentLocation();
     });
   }
 
+  void _scheduleBackgroundTask() {
+    Workmanager().registerPeriodicTask(
+      "fetchLocationTask", // Unique task name
+      "fetchLocation", // Task name
+      frequency: Duration(minutes: 15), // Minimum interval for periodic tasks
+      constraints: Constraints(
+        networkType: NetworkType.connected, // Ensure the device is connected
+      ),
+    );
+    print("Background task scheduled.");
+  }
 
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -51,7 +109,6 @@ class _LocationScreenState extends State<LocationScreen> {
       print("Location services are disabled. Please enable them.");
       return;
     }
-    print("Location services are enabled.");
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
@@ -61,7 +118,6 @@ class _LocationScreenState extends State<LocationScreen> {
         return;
       }
     }
-    print("Location permissions are accessable.");
 
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -99,7 +155,6 @@ class _LocationScreenState extends State<LocationScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,30 +179,5 @@ class _LocationScreenState extends State<LocationScreen> {
         ),
       ),
     );
-  }
-}
-
-void fetchLocation() async {
-  try {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      print("Background: Location services are disabled. Cannot fetch location.");
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-      print("Background: Location permissions are denied. Cannot fetch location.");
-      return;
-    }
-
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-
-    // Log the background location fetch
-    print("Background location fetched at ${DateTime.now()}: Latitude ${position.latitude}, Longitude ${position.longitude}");
-  } catch (e) {
-    print("Error fetching background location: $e");
   }
 }

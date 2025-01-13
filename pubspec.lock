@@ -17,14 +17,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  background_fetch:
-    dependency: transitive
-    description:
-      name: background_fetch
-      sha256: e9f26ae54d88310b7ac2a68f2f9fcee0081a4d5f11100f233a70702021e7ac4f
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.7"
   boolean_selector:
     dependency: transitive
     description:
@@ -142,14 +134,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_background_geolocation:
-    dependency: "direct main"
-    description:
-      name: flutter_background_geolocation
-      sha256: c382103034f8c4e009816c61045fbb8c4d7074eb7d6817eebda1374e3150f6de
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.16.6"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -248,6 +232,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  lifecycle:
+    dependency: "direct main"
+    description:
+      name: lifecycle
+      sha256: c3a264df15f1256ca14c11947f38f5060d02ba724bda9604f6feec20b55221c7
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.0"
   lints:
     dependency: transitive
     description:
@@ -397,6 +389,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  workmanager:
+    dependency: "direct main"
+    description:
+      name: workmanager
+      sha256: ed13530cccd28c5c9959ad42d657cd0666274ca74c56dea0ca183ddd527d3a00
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.2"
 sdks:
   dart: ">=3.6.0 <4.0.0"
   flutter: ">=3.22.0"
